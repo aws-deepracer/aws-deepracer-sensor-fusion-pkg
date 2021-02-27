@@ -4,7 +4,7 @@
 
 The DeepRacer Sensor Fusion ROS package creates the *sensor_fusion_node* which is part of the core AWS DeepRacer application and will be launched from the deepracer_launcher. More details about the application and the components can be found [here](https://github.com/aws-racer/aws-deepracer-launcher).
 
-This node is responsible for collecting the messages from all the sensors and publish the combined sensor message. It provides services and functions to subscribe to the LiDAR and camera messages, configure LiDAR, publish a combined sensor message, publish an overlay message with the LiDAR data overlaid on top of the camera frame.
+This node is responsible for collecting the messages from all the sensors and publish the combined sensor message. It provides services and functions to subscribe to the LiDAR and camera messages, configure LiDAR, publish a combined sensor message, publish an overlay message with the LiDAR data overlaid on top of the camera image.
 
 ## License
 
@@ -14,7 +14,7 @@ The source code is released under Apache 2.0 (https://aws.amazon.com/apache-2-0/
 
 ### Prerequisites
 
-The DeepRacer device comes with all the pre-requisite packages, build systems and libraries installed to build and run the sensor_fusion_pkg. More details about pre installed set of packages and libraries on the DeepRacer, and installing required build systems can be found in the [Getting Started](https://github.com/aws-racer/aws-deepracer-launcher/blob/main/getting-started.md) section of the AWS DeepRacer Opensource page.
+The DeepRacer device comes with all the pre-requisite packages and libraries installed to run the sensor_fusion_pkg. More details about pre installed set of packages and libraries on the DeepRacer, and installing required build systems can be found in the [Getting Started](https://github.com/aws-racer/aws-deepracer-launcher/blob/main/getting-started.md) section of the AWS DeepRacer Opensource page.
 
 The sensor_fusion_pkg specifically depends on the following ROS2 packages as build and execute dependencies:
 
@@ -23,7 +23,7 @@ The sensor_fusion_pkg specifically depends on the following ROS2 packages as bui
 1. *image_transport* - It provides transparent support for transporting images in low-bandwidth compressed formats.
 1. *sensor_msgs* - This package defines messages for commonly used sensors, including cameras and scanning laser rangefinders.
 
-Downloading and Building
+## Downloading and Building
 
 Open up a terminal on the DeepRacer device and run the following commands as root user.
 
@@ -55,7 +55,7 @@ Open up a terminal on the DeepRacer device and run the following commands as roo
 
 ## Usage
 
-The sensor_fusion node provides the core functionality to combine the sensor data from various sensors connected to the DeepRacer vehicle. Although the nodes is built to work with the AWS DeepRacer application, it can be run independently for development/testing/debugging purposes.
+The sensor_fusion_node provides the core functionality to combine the sensor data from various sensors connected to the DeepRacer vehicle. Although the nodes is built to work with the AWS DeepRacer application, it can be run independently for development/testing/debugging purposes.
 
 ### Run the node
 
