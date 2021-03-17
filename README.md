@@ -115,3 +115,7 @@ The  sensor_fusion_pkg_launch.py is also included in this package that gives an 
 | ---------- | ------------ | ----------- |
 |sensor_data_status|SensorStatusCheckSrv|Service that is called to find out the data status of the cameras and the LiDAR sensors. Based on whether the single camera/stereo camera/LiDAR data is being read by the node, the corresponding sensor status are set.|
 |configure_lidar|LidarConfigSrv|Service called to dynamically configure LiDAR processing information for each model. It allows to set the LiDAR preprocessing information like the maximum distance, minimum distance, number of sectors etc., which will be used to create the sensor message being published for running the inference for the particular model selected.|
+
+## Resources
+
+* AWS DeepRacer Opensource getting started: [https://github.com/awsdeepracer/aws-deepracer-launcher/blob/main/getting-started.md](https://github.com/awsdeepracer/aws-deepracer-launcher/blob/main/getting-started.md)
