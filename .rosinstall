@@ -1,4 +1,4 @@
 - git:
-    uri: https://github.com/awsdeepracer/aws-deepracer-interfaces-pkg.git
+    uri: https://github.com/aws-deepracer/aws-deepracer-interfaces-pkg.git
     local-name: aws-deepracer-interfaces-pkg
     version: main

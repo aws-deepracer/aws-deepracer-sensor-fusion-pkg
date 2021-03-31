@@ -2,7 +2,7 @@
 
 ## Overview
 
-The DeepRacer Sensor Fusion ROS package creates the *sensor_fusion_node* which is part of the core AWS DeepRacer application and will be launched from the deepracer_launcher. More details about the application and the components can be found [here](https://github.com/awsdeepracer/aws-deepracer-launcher).
+The DeepRacer Sensor Fusion ROS package creates the *sensor_fusion_node* which is part of the core AWS DeepRacer application and will be launched from the deepracer_launcher. More details about the application and the components can be found [here](https://github.com/aws-deepracer/aws-deepracer-launcher).
 
 This node is responsible for collecting the messages from all the sensors and publish the combined sensor message. It provides services and functions to subscribe to the LiDAR and camera messages, configure LiDAR, publish a combined sensor message, publish an overlay message with the LiDAR data overlaid on top of the camera image.
 
@@ -14,7 +14,7 @@ The source code is released under Apache 2.0 (https://aws.amazon.com/apache-2-0/
 
 ### Prerequisites
 
-The DeepRacer device comes with all the pre-requisite packages and libraries installed to run the sensor_fusion_pkg. More details about pre installed set of packages and libraries on the DeepRacer, and installing required build systems can be found in the [Getting Started](https://github.com/awsdeepracer/aws-deepracer-launcher/blob/main/getting-started.md) section of the AWS DeepRacer Opensource page.
+The DeepRacer device comes with all the pre-requisite packages and libraries installed to run the sensor_fusion_pkg. More details about pre installed set of packages and libraries on the DeepRacer, and installing required build systems can be found in the [Getting Started](https://github.com/aws-deepracer/aws-deepracer-launcher/blob/main/getting-started.md) section of the AWS DeepRacer Opensource page.
 
 The sensor_fusion_pkg specifically depends on the following ROS2 packages as build and execute dependencies:
 
@@ -42,7 +42,7 @@ Open up a terminal on the DeepRacer device and run the following commands as roo
 
 1. Clone the sensor_fusion_pkg on the DeepRacer device:
 
-        git clone https://github.com/awsdeepracer/aws-deepracer-sensor-fusion-pkg.git
+        git clone https://github.com/aws-deepracer/aws-deepracer-sensor-fusion-pkg.git
 
 1. Fetch unreleased dependencies:
 
@@ -126,4 +126,4 @@ The  sensor_fusion_pkg_launch.py is also included in this package that gives an 
 
 ## Resources
 
-* AWS DeepRacer Opensource getting started: [https://github.com/awsdeepracer/aws-deepracer-launcher/blob/main/getting-started.md](https://github.com/awsdeepracer/aws-deepracer-launcher/blob/main/getting-started.md)
+* AWS DeepRacer Opensource getting started: [https://github.com/aws-deepracer/aws-deepracer-launcher/blob/main/getting-started.md](https://github.com/aws-deepracer/aws-deepracer-launcher/blob/main/getting-started.md)
