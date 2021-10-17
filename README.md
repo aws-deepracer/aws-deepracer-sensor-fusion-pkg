@@ -80,7 +80,7 @@ To launch the built `sensor_fusion_node` as the root user on the AWS DeepRacer d
 
 1. Launch the `sensor_fusion_node` using the launch script:
 
-        ros2 launch sensor_fusion_pkg ssensor_fusion_launch.py
+        ros2 launch sensor_fusion_pkg sensor_fusion_launch.py
 
 ## Launch files
 
