@@ -152,12 +152,12 @@ namespace SensorFusion {
         /// @param node_name Name of the node to be created.
         SensorFusionNode(const std::string & node_name)
         : Node(node_name),
+          node_handle_(std::shared_ptr<SensorFusionNode>(this, [](auto *) {})),
+          image_transport_(node_handle_),
           lidarOverlayProcessingObj_(LidarOverlay()),
           enableOverlayPublish_(true),
           imageWidth_(DEFAULT_IMAGE_WIDTH),
-          imageHeight_(DEFAULT_IMAGE_HEIGHT),
-          node_handle_(std::shared_ptr<SensorFusionNode>(this, [](auto *) {})),
-          image_transport_(node_handle_)
+          imageHeight_(DEFAULT_IMAGE_HEIGHT)
         {
 
             RCLCPP_INFO(this->get_logger(), "%s started", node_name.c_str());
@@ -545,6 +545,7 @@ namespace SensorFusion {
 
         rclcpp::Publisher<deepracer_interfaces_pkg::msg::EvoSensorMsg>::SharedPtr sensorMsgPub_;
 
+        rclcpp::Node::SharedPtr node_handle_;
         image_transport::ImageTransport image_transport_;       
         image_transport::Publisher overlayImagePub_;
 
@@ -565,8 +566,6 @@ namespace SensorFusion {
         int imageHeight_;
         std::mutex lidarMutex_;
 
-        rclcpp::Node::SharedPtr node_handle_;
-
     };
 }
 
@@ -575,7 +574,7 @@ namespace SensorFusion {
 int main(int argc, char * argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::Node::SharedPtr node = std::make_shared<SensorFusion::SensorFusionNode>("sensor_fusion_node");
+    auto node = std::make_shared<SensorFusion::SensorFusionNode>("sensor_fusion_node");
     rclcpp::executors::MultiThreadedExecutor exec;
     exec.add_node(node);
     exec.spin();
