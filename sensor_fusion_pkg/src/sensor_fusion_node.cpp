@@ -153,7 +153,7 @@ namespace SensorFusion {
         SensorFusionNode(const std::string & node_name)
         : Node(node_name),
           node_handle_(std::shared_ptr<SensorFusionNode>(this, [](auto *) {})),
-          image_transport_(node_handle_),
+          image_transport_(std::shared_ptr<rclcpp::Node>(this, [](auto *) {})),
           lidarOverlayProcessingObj_(LidarOverlay()),
           enableOverlayPublish_(true),
           imageWidth_(DEFAULT_IMAGE_WIDTH),
@@ -161,6 +161,7 @@ namespace SensorFusion {
         {
 
             RCLCPP_INFO(this->get_logger(), "%s started", node_name.c_str());
+            this->declare_parameter<std::string>("image_transport", "raw");
             createDefaultSensorConfiguration();
             if (checkFile(SENSOR_CONFIGURATION_FILE_PATH)) {
                 setSensorConfigurationFromFile(sensorConfiguration_,
@@ -218,12 +219,11 @@ namespace SensorFusion {
                                                                                                        std::placeholders::_1));
 
             // Subscriber to subscribe to the camera display messages published by the camera_pkg.
-            displaySub_ = this->create_subscription<sensor_msgs::msg::CompressedImage>(DISPLAY_MSG_TOPIC,
-                                                                             sensorMsgQOS,
-                                                                             std::bind(&SensorFusionNode::displayCB,
-                                                                                       this,
-                                                                                       std::placeholders::_1));
-
+            image_transport::TransportHints ith(this);
+            RCLCPP_INFO(this->get_logger(), "image_transport configured to use %s", ith.getTransport().c_str());
+            displaySub_ = image_transport_.subscribe<SensorFusionNode>(std::string(DISPLAY_MSG_TOPIC), 1, 
+                                                                       &SensorFusionNode::displayCB, 
+                                                                       node_handle_, &ith);
 
             cameraImageCount_ = 0;
         }
@@ -281,10 +281,9 @@ namespace SensorFusion {
 
         /// Callback function for camera message subscription.
         /// @param msg Message with images from DeepRacer cameras.
-        void displayCB(const sensor_msgs::msg::CompressedImage::SharedPtr msg) {
+        void displayCB(const sensor_msgs::msg::Image::ConstSharedPtr & msg) {
             try {
                 std::bitset<8> sectorOverlayValues;
-                auto displayMsg = sensor_msgs::msg::CompressedImage();
                 {
                     std::lock_guard<std::mutex> guard(lidarMutex_);
                     size_t blockSize = overlayLidarData_.size()/sensorConfiguration_[LIDAR_OVERLAY_KEY][LIDAR_OVERLAY_CONFIG_LIDAR_OVERLAY_NUM_SECTORS_KEY];
@@ -534,18 +533,17 @@ namespace SensorFusion {
             }
 
         }
-        
 
         rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr lidarSub_;
         rclcpp::Subscription<deepracer_interfaces_pkg::msg::CameraMsg>::SharedPtr cameraSub_;
-        rclcpp::Subscription<sensor_msgs::msg::CompressedImage>::SharedPtr displaySub_;
+        image_transport::Subscriber displaySub_;
 
         rclcpp::Service<deepracer_interfaces_pkg::srv::LidarConfigSrv>::SharedPtr lidarConfigService_;
         rclcpp::Service<deepracer_interfaces_pkg::srv::SensorStatusCheckSrv>::SharedPtr statusCheckService_;
 
         rclcpp::Publisher<deepracer_interfaces_pkg::msg::EvoSensorMsg>::SharedPtr sensorMsgPub_;
 
-        rclcpp::Node::SharedPtr node_handle_;
+        std::shared_ptr<SensorFusionNode> node_handle_;
         image_transport::ImageTransport image_transport_;       
         image_transport::Publisher overlayImagePub_;
 
