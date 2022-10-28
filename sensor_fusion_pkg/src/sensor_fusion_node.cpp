@@ -73,8 +73,8 @@ The node defines:
 #define RAD2DEG(x) ((x)*180./M_PI)
 
 namespace SensorFusion {
-    #define DEFAULT_IMAGE_WIDTH 160
-    #define DEFAULT_IMAGE_HEIGHT 120
+    #define DEFAULT_IMAGE_WIDTH 640
+    #define DEFAULT_IMAGE_HEIGHT 480
 
     // Default lidar configuration
     #define DEFAULT_LIDAR_CONFIGURATION_MIN_LIDAR_ANGLE -60.0
