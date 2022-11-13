@@ -56,8 +56,10 @@ The node defines:
 
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "sensor_msgs/msg/image.hpp"
+#include "sensor_msgs/msg/compressed_image.hpp"
 #include "cv_bridge/cv_bridge.h"
 #include "opencv2/opencv.hpp"
+#include "image_transport/image_transport.hpp"
 
 #include "deepracer_interfaces_pkg/msg/evo_sensor_msg.hpp"
 #include "deepracer_interfaces_pkg/msg/camera_msg.hpp"
@@ -71,8 +73,8 @@ The node defines:
 #define RAD2DEG(x) ((x)*180./M_PI)
 
 namespace SensorFusion {
-    #define DEFAULT_IMAGE_WIDTH 160
-    #define DEFAULT_IMAGE_HEIGHT 120
+    #define DEFAULT_IMAGE_WIDTH 640
+    #define DEFAULT_IMAGE_HEIGHT 480
 
     // Default lidar configuration
     #define DEFAULT_LIDAR_CONFIGURATION_MIN_LIDAR_ANGLE -60.0
@@ -150,12 +152,16 @@ namespace SensorFusion {
         /// @param node_name Name of the node to be created.
         SensorFusionNode(const std::string & node_name)
         : Node(node_name),
+          node_handle_(std::shared_ptr<SensorFusionNode>(this, [](auto *) {})),
+          image_transport_(std::shared_ptr<rclcpp::Node>(this, [](auto *) {})),
           lidarOverlayProcessingObj_(LidarOverlay()),
           enableOverlayPublish_(true),
           imageWidth_(DEFAULT_IMAGE_WIDTH),
           imageHeight_(DEFAULT_IMAGE_HEIGHT)
         {
+
             RCLCPP_INFO(this->get_logger(), "%s started", node_name.c_str());
+            this->declare_parameter<std::string>("image_transport", "raw");
             createDefaultSensorConfiguration();
             if (checkFile(SENSOR_CONFIGURATION_FILE_PATH)) {
                 setSensorConfigurationFromFile(sensorConfiguration_,
@@ -179,7 +185,7 @@ namespace SensorFusion {
 
             // Publisher to publish the overlay message with sector LiDAR information
             // overlayed over the camera image frame.
-            overlayImagePub_ = this->create_publisher<sensor_msgs::msg::Image>(OVERLAY_MSG_TOPIC, 1);
+            overlayImagePub_ = image_transport_.advertise(OVERLAY_MSG_TOPIC, 1);
             
             statusCheckService_ = this->create_service<deepracer_interfaces_pkg::srv::SensorStatusCheckSrv>(
                                                                                 SENSOR_DATA_STATUS_SERVICE_NAME,
@@ -213,12 +219,11 @@ namespace SensorFusion {
                                                                                                        std::placeholders::_1));
 
             // Subscriber to subscribe to the camera display messages published by the camera_pkg.
-            displaySub_ = this->create_subscription<sensor_msgs::msg::Image>(DISPLAY_MSG_TOPIC,
-                                                                             sensorMsgQOS,
-                                                                             std::bind(&SensorFusionNode::displayCB,
-                                                                                       this,
-                                                                                       std::placeholders::_1));
-
+            image_transport::TransportHints ith(this);
+            RCLCPP_INFO(this->get_logger(), "image_transport configured to use %s", ith.getTransport().c_str());
+            displaySub_ = image_transport_.subscribe<SensorFusionNode>(std::string(DISPLAY_MSG_TOPIC), 1, 
+                                                                       &SensorFusionNode::displayCB, 
+                                                                       node_handle_, &ith);
 
             cameraImageCount_ = 0;
         }
@@ -276,10 +281,9 @@ namespace SensorFusion {
 
         /// Callback function for camera message subscription.
         /// @param msg Message with images from DeepRacer cameras.
-        void displayCB(const sensor_msgs::msg::Image::SharedPtr msg) {
+        void displayCB(const sensor_msgs::msg::Image::ConstSharedPtr & msg) {
             try {
                 std::bitset<8> sectorOverlayValues;
-                auto displayMsg = sensor_msgs::msg::Image();
                 {
                     std::lock_guard<std::mutex> guard(lidarMutex_);
                     size_t blockSize = overlayLidarData_.size()/sensorConfiguration_[LIDAR_OVERLAY_KEY][LIDAR_OVERLAY_CONFIG_LIDAR_OVERLAY_NUM_SECTORS_KEY];
@@ -297,7 +301,7 @@ namespace SensorFusion {
                 cv::Mat overlayCVImage = lidarOverlayProcessingObj_.overlayLidarDataOnImage(resizedImg, sectorOverlayValues);
                 if(enableOverlayPublish_) {
                     // Publish Lidar Overlay
-                    overlayImagePub_->publish(*(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", overlayCVImage).toImageMsg().get()));
+                    overlayImagePub_.publish(*(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", overlayCVImage).toImageMsg().get()));
                 }
             }
             catch (const std::exception &ex) {
@@ -529,17 +533,19 @@ namespace SensorFusion {
             }
 
         }
-        
 
         rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr lidarSub_;
         rclcpp::Subscription<deepracer_interfaces_pkg::msg::CameraMsg>::SharedPtr cameraSub_;
-        rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr displaySub_;
+        image_transport::Subscriber displaySub_;
 
         rclcpp::Service<deepracer_interfaces_pkg::srv::LidarConfigSrv>::SharedPtr lidarConfigService_;
         rclcpp::Service<deepracer_interfaces_pkg::srv::SensorStatusCheckSrv>::SharedPtr statusCheckService_;
 
         rclcpp::Publisher<deepracer_interfaces_pkg::msg::EvoSensorMsg>::SharedPtr sensorMsgPub_;
-        rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr overlayImagePub_;
+
+        std::shared_ptr<SensorFusionNode> node_handle_;
+        image_transport::ImageTransport image_transport_;       
+        image_transport::Publisher overlayImagePub_;
 
         // Max LiDAR distance required to replace the incorrect/erroneous LiDAR data point
         // that is read as 'inf' in the LaserScan message.
@@ -557,6 +563,7 @@ namespace SensorFusion {
         int imageWidth_;
         int imageHeight_;
         std::mutex lidarMutex_;
+
     };
 }
 
